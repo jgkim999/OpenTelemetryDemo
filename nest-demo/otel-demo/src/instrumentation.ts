@@ -32,8 +32,8 @@ const traceExporter = new OTLPTraceExporter({
   url: otlpEndpoint,
 });
 
-const spanProcessors = [new BatchSpanProcessor(traceExporter)];
-//const spanProcessors = [new BatchSpanProcessor(new ConsoleSpanExporter())];
+//const spanProcessors = [new BatchSpanProcessor(traceExporter)];
+const spanProcessors = [new BatchSpanProcessor(new ConsoleSpanExporter())];
 
 // Configure resource attributes
 const resource = resourceFromAttributes({
