@@ -26,8 +26,8 @@ const traceExporter = new OTLPTraceExporter({
   url: 'http://localhost:4318/v1/traces',
 });
 
-const spanProcessors = [new BatchSpanProcessor(traceExporter)];
-//const spanProcessors = [new BatchSpanProcessor(new ConsoleSpanExporter())];
+//const spanProcessors = [new BatchSpanProcessor(traceExporter)];
+const spanProcessors = [new BatchSpanProcessor(new ConsoleSpanExporter())];
 
 const otelSDK = new NodeSDK({
   metricReader,
