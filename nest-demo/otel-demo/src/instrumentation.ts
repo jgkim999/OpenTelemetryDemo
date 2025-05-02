@@ -1,3 +1,4 @@
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
@@ -24,7 +25,11 @@ import {
   ConsoleMetricExporter,
 } from '@opentelemetry/sdk-metrics';
 
-const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+// 디버깅 목적이 아니면 주석 처리 하세요.
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
+
+const otlpTraceEndpoint = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT;
+const otlpMeticEndpoint = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
 
 const metricsExporter = () => {
   // Prometheus
@@ -47,13 +52,13 @@ const metricsExporter = () => {
   }
   // OTEL
   return new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter({ url: otlpEndpoint }),
+    exporter: new OTLPMetricExporter({ url: otlpMeticEndpoint }),
     exportTimeoutMillis: parseInt(
-      process.env.OTEL_METRIC_EXPORT_TIMEOUT || '30000',
+      process.env.OTEL_METRIC_EXPORT_TIMEOUT || '5000',
       10,
     ),
     exportIntervalMillis: parseInt(
-      process.env.OTEL_METRIC_EXPORT_INTERVAL || '60000',
+      process.env.OTEL_METRIC_EXPORT_INTERVAL || '5000',
       10,
     ),
   });
@@ -64,7 +69,7 @@ const spanProcessors = () => {
     return [new BatchSpanProcessor(new ConsoleSpanExporter())];
   } else {
     return [
-      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpEndpoint })),
+      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpTraceEndpoint })),
     ];
   }
 };
