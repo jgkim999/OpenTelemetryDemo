@@ -28,15 +28,28 @@ import {
 } from '@opentelemetry/sdk-metrics';
 
 // 디버깅 목적이 아니면 주석 처리 하세요.
-diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
+if (process.env.OTEL_DEBUG_LOGGING === 'true') {
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
+}
 
-const otlpTraceEndpoint = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT;
-const otlpMeticEndpoint = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
+const otlpTraceEndpoint =
+  process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ||
+  'http://localhost:4318/v1/traces';
+const otlpMeticEndpoint =
+  process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://localhost:4318';
+// Validate endpoints
+if (!otlpTraceEndpoint || !otlpMeticEndpoint) {
+  console.warn(
+    'Warning: One or more OTLP endpoints are not configured properly. Using default values.',
+  );
+}
 
 const metricsExporter = () => {
   // Prometheus
   if (process.env.OTEL_METRICS_EXPORTER == 'prometheus') {
-    return new PrometheusExporter({ port: 3002 });
+    return new PrometheusExporter({
+      port: parseInt(process.env.PROMETHEUS_PORT || '3002', 10),
+    });
   }
   // Console
   if (process.env.OTEL_METRICS_EXPORTER == 'console') {
@@ -56,11 +69,11 @@ const metricsExporter = () => {
   return new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporter({ url: otlpMeticEndpoint }),
     exportTimeoutMillis: parseInt(
-      process.env.OTEL_METRIC_EXPORT_TIMEOUT || '5000',
+      process.env.OTEL_METRIC_EXPORT_TIMEOUT || '15000',
       10,
     ),
     exportIntervalMillis: parseInt(
-      process.env.OTEL_METRIC_EXPORT_INTERVAL || '5000',
+      process.env.OTEL_METRIC_EXPORT_INTERVAL || '15000',
       10,
     ),
   });
@@ -90,9 +103,10 @@ const anotherResource = resourceFromAttributes({
 const mergedResource = resource.merge(anotherResource);
 
 // Configure sampling rate
+const defaultRatio = process.env.NODE_ENV === 'production' ? 0.1 : 1.0;
 const samplingRatio = process.env.OTEL_SAMPLING_RATIO
   ? parseFloat(process.env.OTEL_SAMPLING_RATIO)
-  : 1.0;
+  : defaultRatio;
 
 const otelSDK = new NodeSDK({
   metricReader: metricsExporter(),
