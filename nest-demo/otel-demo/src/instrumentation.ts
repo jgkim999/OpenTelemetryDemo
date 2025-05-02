@@ -1,14 +1,15 @@
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
 } from '@opentelemetry/sdk-trace-base';
-//import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import * as process from 'process';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import {
   CompositePropagator,
   W3CTraceContextPropagator,
@@ -19,25 +20,63 @@ import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentation
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-node';
+import {
+  PeriodicExportingMetricReader,
+  ConsoleMetricExporter,
+} from '@opentelemetry/sdk-metrics';
 
-const metricReader = new PrometheusExporter({
-  port: 3002,
-});
+// 디버깅 목적이 아니면 주석 처리 하세요.
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
-// http://otel-collector:4317/v1/traces
-const otlpEndpoint =
-  process.env.OTLP_ENDPOINT || 'http://localhost:4318/v1/traces';
+const otlpTraceEndpoint = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT;
+const otlpMeticEndpoint = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
 
-const traceExporter = new OTLPTraceExporter({
-  url: otlpEndpoint,
-});
+const metricsExporter = () => {
+  // Prometheus
+  if (process.env.OTEL_METRICS_EXPORTER == 'prometheus') {
+    return new PrometheusExporter({ port: 3002 });
+  }
+  // Console
+  if (process.env.OTEL_METRICS_EXPORTER == 'console') {
+    return new PeriodicExportingMetricReader({
+      exporter: new ConsoleMetricExporter(),
+      exportTimeoutMillis: parseInt(
+        process.env.OTEL_METRIC_EXPORT_TIMEOUT || '30000',
+        10,
+      ),
+      exportIntervalMillis: parseInt(
+        process.env.OTEL_METRIC_EXPORT_INTERVAL || '60000',
+        10,
+      ),
+    });
+  }
+  // OTEL
+  return new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({ url: otlpMeticEndpoint }),
+    exportTimeoutMillis: parseInt(
+      process.env.OTEL_METRIC_EXPORT_TIMEOUT || '5000',
+      10,
+    ),
+    exportIntervalMillis: parseInt(
+      process.env.OTEL_METRIC_EXPORT_INTERVAL || '5000',
+      10,
+    ),
+  });
+};
 
-//const spanProcessors = [new BatchSpanProcessor(traceExporter)];
-const spanProcessors = [new BatchSpanProcessor(new ConsoleSpanExporter())];
+const spanProcessors = () => {
+  if (process.env.OTEL_TRACE_EXPORTER == 'console') {
+    return [new BatchSpanProcessor(new ConsoleSpanExporter())];
+  } else {
+    return [
+      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpTraceEndpoint })),
+    ];
+  }
+};
 
 // Configure resource attributes
 const resource = resourceFromAttributes({
-  [ATTR_SERVICE_NAME]: 'api-service',
+  [ATTR_SERVICE_NAME]: 'otel-demo-service',
 });
 
 const anotherResource = resourceFromAttributes({
@@ -54,8 +93,8 @@ const samplingRatio = process.env.OTEL_SAMPLING_RATIO
   : 1.0;
 
 const otelSDK = new NodeSDK({
-  metricReader,
-  spanProcessors: spanProcessors,
+  metricReader: metricsExporter(),
+  spanProcessors: spanProcessors(),
   contextManager: new AsyncLocalStorageContextManager(),
   resource: mergedResource,
   sampler: new TraceIdRatioBasedSampler(samplingRatio),
