@@ -4,6 +4,8 @@ import {
   ConsoleSpanExporter,
 } from '@opentelemetry/sdk-trace-base';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
@@ -98,7 +100,12 @@ const otelSDK = new NodeSDK({
   contextManager: new AsyncLocalStorageContextManager(),
   resource: mergedResource,
   sampler: new TraceIdRatioBasedSampler(samplingRatio),
-  instrumentations: [getNodeAutoInstrumentations(), new NestInstrumentation()],
+  instrumentations: [
+    getNodeAutoInstrumentations(),
+    new NestInstrumentation(),
+    new HttpInstrumentation(),
+    new ExpressInstrumentation(),
+  ],
   textMapPropagator: new CompositePropagator({
     propagators: [
       new W3CTraceContextPropagator(),
