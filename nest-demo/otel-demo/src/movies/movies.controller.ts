@@ -1,29 +1,36 @@
-import { Controller, Get, Param, Delete, Logger } from '@nestjs/common';
+import { Controller, Get, Param, Delete, Logger, BadRequestException } from '@nestjs/common';
 
 @Controller('movies')
 export class MoviesController {
   @Get('getAll')
   getAll() {
-    //logger.info('Get all movies');
-    Logger.log(
-      'log request all movies',
-      JSON.stringify({ userId: 123123, movie: 1 }),
-    );
-    Logger.warn('warn request all movies');
-    Logger.error('error request all movies');
-    Logger.debug('debug request all movies');
-    Logger.fatal('fatal request all movies');
-    Logger.verbose('verbose request all movies');
+    Logger.verbose({ message: 'verbose request all movies' });
+    Logger.log({ message: 'log request all movies', context: 'movies' });
+    Logger.warn({ message: 'warn request all movies' });
+    Logger.error({ message: 'error request all movies' });
+    Logger.debug({ message: 'debug request all movies' });
+    Logger.fatal({ message: 'fatal request all movies' });
     return 'This will return all movies';
   }
 
   @Get(':id')
   getOne(@Param('id') movieId: string) {
-    Logger.log(
-      'log request movie',
-      JSON.stringify({ userId: 123123, movie: movieId }),
-    );
-    return `This will return one movie with the id: ${movieId}`;
+    try {
+      Logger.log({
+        message: 'log request movie',
+        data: { userId: 123123, movie: movieId },
+      });
+      if (Math.random() > 0.5) {
+        throw new BadRequestException('Random error occurred');
+      }
+      return `This will return one movie with the id: ${movieId}`;
+    } catch (error) {
+      if (error instanceof Error) {
+        Logger.error('error request movie', error.stack);
+      } else {
+        Logger.error('error request movie', 'Unknown error');
+      }
+    }
   }
 
   @Delete(':id')
