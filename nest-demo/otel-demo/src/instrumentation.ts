@@ -1,24 +1,25 @@
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import * as process from 'process';
 import {
   BatchSpanProcessor,
   ConsoleSpanExporter,
 } from '@opentelemetry/sdk-trace-base';
-import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
-import * as process from 'process';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import {
   CompositePropagator,
   W3CTraceContextPropagator,
   W3CBaggagePropagator,
 } from '@opentelemetry/core';
-import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
+import { NodeSDK, logs } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
+import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { TraceIdRatioBasedSampler } from '@opentelemetry/sdk-trace-node';
@@ -26,6 +27,7 @@ import {
   PeriodicExportingMetricReader,
   ConsoleMetricExporter,
 } from '@opentelemetry/sdk-metrics';
+import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 
 // 디버깅 목적이 아니면 주석 처리 하세요.
 if (process.env.OTEL_DEBUG_LOGGING === 'true') {
@@ -89,6 +91,13 @@ const spanProcessors = () => {
   }
 };
 
+const logExporter = new OTLPLogExporter({
+  url:
+    process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ||
+    'http://localhost:4318/v1/logs',
+});
+const logRecordProcessor = new logs.BatchLogRecordProcessor(logExporter);
+
 // Configure resource attributes
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: 'otel-demo-service',
@@ -109,6 +118,7 @@ const samplingRatio = process.env.OTEL_SAMPLING_RATIO
   : defaultRatio;
 
 const otelSDK = new NodeSDK({
+  logRecordProcessors: [logRecordProcessor],
   metricReader: metricsExporter(),
   spanProcessors: spanProcessors(),
   contextManager: new AsyncLocalStorageContextManager(),
@@ -116,9 +126,17 @@ const otelSDK = new NodeSDK({
   sampler: new TraceIdRatioBasedSampler(samplingRatio),
   instrumentations: [
     getNodeAutoInstrumentations(),
-    new NestInstrumentation(),
     new HttpInstrumentation(),
     new ExpressInstrumentation(),
+    new NestInstrumentation(),
+    new WinstonInstrumentation({
+      // 계측 활성화 시 로그 본문에 trace context 자동 주입 가능
+      logHook: (span, record) => {
+        record['trace_id'] = span.spanContext().traceId;
+        record['span_id'] = span.spanContext().spanId;
+        record['trace_flags'] = span.spanContext().traceFlags;
+      },
+    }),
   ],
   textMapPropagator: new CompositePropagator({
     propagators: [
