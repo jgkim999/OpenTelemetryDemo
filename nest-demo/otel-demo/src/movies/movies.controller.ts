@@ -20,6 +20,8 @@ export class MoviesController {
         message: 'log request movie',
         data: { userId: 123123, movie: movieId },
       });
+      // This random error is for demonstration purposes only
+      // TODO: Remove or make configurable before production deployment
       if (Math.random() > 0.5) {
         throw new BadRequestException('Random error occurred');
       }
@@ -30,6 +32,8 @@ export class MoviesController {
       } else {
         Logger.error('error request movie', 'Unknown error');
       }
+      // Re-throw the error to maintain consistent API behavior
+      throw error;
     }
   }
 
