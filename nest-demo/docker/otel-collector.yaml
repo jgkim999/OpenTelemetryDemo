@@ -23,6 +23,10 @@ exporters:
     endpoint: http://tempo:4318
     tls:
       insecure: true
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
   prometheus:
     endpoint: 0.0.0.0:9090
   otlphttp:
