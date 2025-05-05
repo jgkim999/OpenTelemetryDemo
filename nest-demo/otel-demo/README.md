@@ -1,14 +1,27 @@
 # Nest.js OpenTelematry 예제
 
+- [Nest.js OpenTelematry 예제](#nestjs-opentelematry-예제)
+  - [Description](#description)
+  - [Project setup](#project-setup)
+  - [Compile and run the project](#compile-and-run-the-project)
+  - [Run tests](#run-tests)
+  - [Docker](#docker)
+    - [Windows](#windows)
+    - [Linux, Mac](#linux-mac)
+    - [docker data 저장 위치](#docker-data-저장-위치)
+  - [Trace](#trace)
+  - [Log, Winston](#log-winston)
+  - [Test, k6](#test-k6)
+
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework 에서 [Otel-Colllector](https://opentelemetry.io/docs/collector/)로 Log, Metric, Trace를 전송하는 방법에 대한 예제이다.
+[Nest](https://github.com/nestjs/nest) framework 에서 [Otel-Colllector](https://opentelemetry.io/docs/collector/)로 Log, Metric, Trace를 전송하는 방법에 대한 예제입니다.
 
-로컬환경에서 docker를 이용해서 테스트 가능하게 구성했다.
+로컬환경에서 docker를 이용해서 테스트 가능하게 구성했습니다.
 
-프로그램은 [Otel-Collector](https://opentelemetry.io/docs/collector/)로 전송만 하면 된다.
+프로그램은 [Otel-Collector](https://opentelemetry.io/docs/collector/)로 Log, Metric, Trace 정보를 전송합니다.
 
-[Otel-Collector](https://opentelemetry.io/docs/collector/)에서 다른 Endpoint 전송은 인프라에서 세팅한다.
+[Otel-Collector](https://opentelemetry.io/docs/collector/)는 에서 다른 Endpoint 전송은 인프라에서 세팅한다.
 
 전송이 제대로 된다면 Grafana에서 확인하고 Dashboard를 구성한다.
 
@@ -141,7 +154,63 @@ Windows의 경우 USERPROFILE/docker-data 아래에 저장된다. 테스트 이�
 
 Linux, Mac일 경우 HOME/docker-data 아래에 저장된다. 테스트 이후에 필요없을시 삭제한다.
 
-## 테스트
+## Trace
+
+```mermaid
+sequenceDiagram
+    participant Env as Environment
+    participant Instrumentation as instrumentation.ts
+    participant OTEL as OpenTelemetry SDK
+
+    Env->>Instrumentation: Provide environment variables (debug logging, endpoints, ports, sampling ratio)
+    Instrumentation->>Instrumentation: Conditionally enable diagnostic logging
+    Instrumentation->>Instrumentation: Set OTLP endpoints (trace, metrics, logs) with defaults
+    Instrumentation->>Instrumentation: Warn if endpoints are missing
+    Instrumentation->>Instrumentation: Configure Prometheus port from env or fallback
+    Instrumentation->>Instrumentation: Set export timeout/intervals
+    Instrumentation->>Instrumentation: Set sampling ratio (prod: 0.1, else 1.0, or from env)
+    Instrumentation->>OTEL: Initialize SDK with configured options
+```
+
+## Log, Winston
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant NestApp
+    participant OpenTelemetryModule
+    participant WinstonLogger
+    participant OTLPExporter
+
+    Client->>NestApp: Sends HTTP request
+    NestApp->>OpenTelemetryModule: Process request, collect metrics
+    OpenTelemetryModule->>OpenTelemetryModule: Add default attribute ("custom": "nest")
+    OpenTelemetryModule->>OpenTelemetryModule: Ignore /favicon.ico route
+    OpenTelemetryModule->>OpenTelemetryModule: Apply "demo" prefix to metric names
+    NestApp->>WinstonLogger: Log request details with trace context
+    WinstonLogger->>OTLPExporter: Export logs with trace context
+    OpenTelemetryModule->>OTLPExporter: Export metrics/logs to unified OTLP endpoint
+```
+
+## Test, k6
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant k6 (Load Tester)
+    participant NestApp
+    participant OpenTelemetry SDK
+    participant Prometheus Exporter
+    participant OTLP Trace Exporter
+
+    User->>NestApp: HTTP GET /movies/getAll
+    NestApp->>OpenTelemetry SDK: Trace request, collect metrics
+    OpenTelemetry SDK->>Prometheus Exporter: Export metrics (port 3002)
+    OpenTelemetry SDK->>OTLP Trace Exporter: Export traces (http://localhost:4318)
+    NestApp-->>User: Return static response
+
+    k6 (Load Tester)->>NestApp: Repeated HTTP GET /movies/getAll
+```
 
 Log, Metric, Trace가 제대로 남는지 테스트 하기 위해서 [k6](https://grafana.com/docs/k6/latest/set-up/install-k6/) 스크립트를 이용해서 테스트 한다.
 
