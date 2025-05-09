@@ -1,0 +1,32 @@
+﻿package com.jgkim.movie.member;
+
+/**
+ * 사용자 관리 레포지토리 인터페이스
+ */
+public interface MemberRepository {
+    /**
+     * 사용자 조회
+     *
+     * @param memberId 사용자 ID
+     * @return 사용자 정보
+     */
+    Member findById(Long memberId);
+    /**
+     * 사용자 등록
+     *
+     * @param member 사용자 정보
+     */
+    void save(Member member);
+    /**
+     * 사용자 삭제
+     *
+     * @param memberId 사용자 ID
+     */
+    void delete(Long memberId);
+    /**
+     * 사용자 정보 수정
+     *
+     * @param member 사용자 정보
+     */
+    void update(Member member);
+}
