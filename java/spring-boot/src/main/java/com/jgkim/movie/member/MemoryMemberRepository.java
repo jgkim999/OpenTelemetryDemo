@@ -1,4 +1,4 @@
-﻿package com.jgkim.movie.member;
+package com.jgkim.movie.member;
 
 import java.util.HashMap;
 

@@ -1,5 +1,4 @@
-﻿package com.jgkim.movie.member;
-
+package com.jgkim.movie.member;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;

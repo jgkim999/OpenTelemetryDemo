@@ -1,4 +1,4 @@
-﻿package com.jgkim.movie.member;
+package com.jgkim.movie.member;
 
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository = new MemoryMemberRepository();

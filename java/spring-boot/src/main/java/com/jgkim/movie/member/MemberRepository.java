@@ -1,4 +1,4 @@
-﻿package com.jgkim.movie.member;
+package com.jgkim.movie.member;
 
 /**
  * 사용자 관리 레포지토리 인터페이스
