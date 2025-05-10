@@ -1,3 +1,9 @@
-# node-js
+# OpenTelemetry Demo
 
-[Nest.js + OpenTelemetry 예제](./nest-demo/otel-demo/README.md)
+## Node.js
+
+[Nest.js + OpenTelemetry](./node/nest-js/README.md)
+
+## Java
+
+[Spring Boot + OpenTelemetry](./java/spring-boot/README.md)

@@ -397,7 +397,7 @@ docker-compose up -d
 
 ### docker data 저장 위치
 
-./docker/.env
+[./docker/.env](../../docker/.env)
 
 ```bash
 DATA_DIR=${HOME:-$USERPROFILE}/docker-data
@@ -413,7 +413,7 @@ Linux, Mac일 경우 HOME/docker-data 아래에 저장된다. 테스트 이후�
 
 초기 비번은 admin/admin 입니다.
 
-[docker-compose.yml](../docker/docker-compose.yml)
+[docker-compose.yml](../../docker/docker-compose.yml)
 
 [http://localhost:3000/](http://localhost:3000/) 으로 접속합니다.
 
