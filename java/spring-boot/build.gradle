@@ -26,9 +26,11 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.code.gson:gson:2.13.1'
+	implementation 'net.datafaker:datafaker:2.4.2'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	runtimeOnly 'io.micrometer:micrometer-registry-otlp'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
