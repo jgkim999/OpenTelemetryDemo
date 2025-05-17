@@ -1,12 +1,14 @@
 package com.jgkim.movie.member;
 
 import net.datafaker.Faker;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 
 /**
  * 사용자 관리 레포지토리 구현체
  */
+@Component
 public class MemoryMemberRepository implements MemberRepository {
     /**
      * 사용자 저장소

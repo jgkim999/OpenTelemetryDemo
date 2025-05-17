@@ -1,8 +1,13 @@
 package com.jgkim.movie.movie;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
 public class MovieServiceImpl implements MovieService {
     private final MovieRepository movieRepository;
 
+    @Autowired
     public MovieServiceImpl(MovieRepository movieRepository) {
         this.movieRepository = movieRepository;
     }

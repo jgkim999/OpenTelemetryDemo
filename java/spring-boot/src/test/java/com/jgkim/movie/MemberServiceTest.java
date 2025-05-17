@@ -9,8 +9,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 @SpringBootTest
 public class MemberServiceTest {
-    ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
-    MemberService memberService = ac.getBean("memberService", MemberService.class);
+    ApplicationContext ac = new AnnotationConfigApplicationContext(AutoAppConfig.class);
+    MemberService memberService = ac.getBean(MemberService.class);
 
     @Test
     public void findMember() {

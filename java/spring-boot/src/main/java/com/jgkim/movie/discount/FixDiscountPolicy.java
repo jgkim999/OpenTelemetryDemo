@@ -1,7 +1,9 @@
 package com.jgkim.movie.discount;
 
 import com.jgkim.movie.member.Member;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FixDiscountPolicy implements DiscountPolicy {
     private final int discountFixAmount;
     {

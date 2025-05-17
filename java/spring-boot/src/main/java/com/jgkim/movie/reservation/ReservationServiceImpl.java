@@ -5,14 +5,18 @@ import com.jgkim.movie.member.Member;
 import com.jgkim.movie.member.MemberService;
 import com.jgkim.movie.movie.Movie;
 import com.jgkim.movie.movie.MovieService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Component
 public class ReservationServiceImpl implements ReservationService {
     private final MovieService movieService;
     private final MemberService memberService;
     private final DiscountPolicy discountPolicy;
 
+    @Autowired
     public ReservationServiceImpl(
             MovieService movieService,
             MemberService memberService,

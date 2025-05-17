@@ -1,9 +1,11 @@
 package com.jgkim.movie.movie;
 
 import net.datafaker.Faker;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 
+@Component
 public class MemoryMovieRepository implements MovieRepository {
     private static final HashMap<Long, Movie> store = new HashMap<>();
 
