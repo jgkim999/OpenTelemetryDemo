@@ -1,4 +1,4 @@
-﻿package com.jgkim.movie.movie;
+package com.jgkim.movie.movie;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

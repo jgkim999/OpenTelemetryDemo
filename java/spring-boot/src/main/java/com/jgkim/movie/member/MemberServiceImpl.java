@@ -1,7 +1,11 @@
 package com.jgkim.movie.member;
 
 public class MemberServiceImpl implements MemberService {
-    private final MemberRepository memberRepository = new MemoryMemberRepository();
+    private final MemberRepository memberRepository;
+
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
     /**
      * @param memberId 사용자 번호
      * @return Member

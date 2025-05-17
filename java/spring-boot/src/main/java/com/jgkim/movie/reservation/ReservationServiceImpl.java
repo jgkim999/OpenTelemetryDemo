@@ -1,18 +1,26 @@
 package com.jgkim.movie.reservation;
 
 import com.jgkim.movie.discount.DiscountPolicy;
-import com.jgkim.movie.discount.FixDiscountPolicy;
-import com.jgkim.movie.member.*;
+import com.jgkim.movie.member.Member;
+import com.jgkim.movie.member.MemberService;
 import com.jgkim.movie.movie.Movie;
 import com.jgkim.movie.movie.MovieService;
-import com.jgkim.movie.movie.MovieServiceImpl;
 
 import java.util.UUID;
 
 public class ReservationServiceImpl implements ReservationService {
-    private final MovieService movieService = new MovieServiceImpl();
-    private final MemberService memberService = new MemberServiceImpl();
-    private final DiscountPolicy discountPolicy = new FixDiscountPolicy();
+    private final MovieService movieService;
+    private final MemberService memberService;
+    private final DiscountPolicy discountPolicy;
+
+    public ReservationServiceImpl(
+            MovieService movieService,
+            MemberService memberService,
+            DiscountPolicy discountPolicy) {
+        this.movieService = movieService;
+        this.memberService = memberService;
+        this.discountPolicy = discountPolicy;
+    }
 
     @Override
     public Reservation createReservation(Long movieId, Long memberId) {

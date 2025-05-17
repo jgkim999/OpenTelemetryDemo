@@ -1,4 +1,4 @@
-﻿package com.jgkim.movie.movie;
+package com.jgkim.movie.movie;
 
 public interface MovieRepository {
     Movie findById(Long movieId);

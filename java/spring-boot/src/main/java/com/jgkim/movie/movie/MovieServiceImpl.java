@@ -1,7 +1,11 @@
-﻿package com.jgkim.movie.movie;
+package com.jgkim.movie.movie;
 
 public class MovieServiceImpl implements MovieService {
-    private final MovieRepository movieRepository = new MemoryMovieRepository();
+    private final MovieRepository movieRepository;
+
+    public MovieServiceImpl(MovieRepository movieRepository) {
+        this.movieRepository = movieRepository;
+    }
     /**
      * 영화 조회
      *
