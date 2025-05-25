@@ -3,6 +3,8 @@ package com.jgkim.movie.movie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class MovieServiceImpl implements MovieService {
@@ -47,5 +49,10 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public void modifyMovie(Movie movie) {
         movieRepository.update(movie);
+    }
+
+    @Override
+    public List<Movie> findAll() {
+        return movieRepository.findAll();
     }
 }

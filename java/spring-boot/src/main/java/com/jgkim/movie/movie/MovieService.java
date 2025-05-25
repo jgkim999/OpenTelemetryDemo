@@ -1,5 +1,7 @@
 package com.jgkim.movie.movie;
 
+import java.util.List;
+
 public interface MovieService {
     /**
      * 영화 조회
@@ -29,4 +31,6 @@ public interface MovieService {
      * @param movie 영화 정보
      */
     void modifyMovie(Movie movie);
+
+    List<Movie> findAll();
 }

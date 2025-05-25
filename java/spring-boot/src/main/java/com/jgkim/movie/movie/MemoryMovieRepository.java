@@ -3,7 +3,10 @@ package com.jgkim.movie.movie;
 import net.datafaker.Faker;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MemoryMovieRepository implements MovieRepository {
@@ -50,5 +53,10 @@ public class MemoryMovieRepository implements MovieRepository {
     public void update(Movie movie) {
         store.remove(movie.getId());
         store.put(movie.getId(), movie);
+    }
+
+    @Override
+    public List<Movie> findAll() {
+        return new ArrayList<>(store.values());
     }
 }
