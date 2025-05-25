@@ -15,16 +15,14 @@ common:
   ring:
     kvstore:
       store: inmemory
-
 schema_config:
   configs:
-    - from: 2020-10-24
-      store: tsdb
+    - from: 2024-04-01
       object_store: filesystem
+      store: tsdb
       schema: v13
       index:
         prefix: index_
         period: 24h
-
 ruler:
   alertmanager_url: http://localhost:9093
