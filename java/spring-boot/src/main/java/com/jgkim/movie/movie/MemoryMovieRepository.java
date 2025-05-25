@@ -1,5 +1,6 @@
 package com.jgkim.movie.movie;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import net.datafaker.Faker;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ public class MemoryMovieRepository implements MovieRepository {
      * @param movieId
      * @return
      */
+    @WithSpan
     @Override
     public Movie findById(Long movieId) {
         return store.get(movieId);
@@ -33,6 +35,7 @@ public class MemoryMovieRepository implements MovieRepository {
     /**
      * @param movie
      */
+    @WithSpan
     @Override
     public void save(Movie movie) {
         store.put(movie.getId(), movie);
@@ -41,6 +44,7 @@ public class MemoryMovieRepository implements MovieRepository {
     /**
      * @param movieId
      */
+    @WithSpan
     @Override
     public void delete(Long movieId) {
         store.remove(movieId);
@@ -49,12 +53,14 @@ public class MemoryMovieRepository implements MovieRepository {
     /**
      * @param movie
      */
+    @WithSpan
     @Override
     public void update(Movie movie) {
         store.remove(movie.getId());
         store.put(movie.getId(), movie);
     }
 
+    @WithSpan
     @Override
     public List<Movie> findAll() {
         return new ArrayList<>(store.values());

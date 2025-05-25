@@ -31,9 +31,9 @@ dependencyManagement {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'com.google.code.gson:gson:2.13.1'
 	implementation 'net.datafaker:datafaker:2.4.2'
-
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp' // OTLP Exporter 추가 (Collector로 전송)
 

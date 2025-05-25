@@ -1,6 +1,7 @@
 package com.jgkim.movie.movie;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import java.util.List;
 public class MovieController {
     private final MovieService movieService;
 
+    @WithSpan
     @GetMapping("/movies")
     List<Movie> all() {
         String spanId = Span.current().getSpanContext().getSpanId();
@@ -24,6 +26,7 @@ public class MovieController {
         return movies;
     }
 
+    @WithSpan
     @GetMapping("/movie/{id}")
     Movie one(@PathVariable("id") Long id) {
         String spanId = Span.current().getSpanContext().getSpanId();

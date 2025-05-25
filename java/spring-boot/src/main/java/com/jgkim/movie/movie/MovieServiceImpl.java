@@ -1,5 +1,6 @@
 package com.jgkim.movie.movie;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ public class MovieServiceImpl implements MovieService {
      * @return 영화 정보
      */
     @Override
+    @WithSpan
     public Movie findMovie(Long movieId) {
         return movieRepository.findById(movieId);
     }
@@ -27,6 +29,7 @@ public class MovieServiceImpl implements MovieService {
      * @param movie 영화 정보
      */
     @Override
+    @WithSpan
     public void registerMovie(Movie movie) {
         movieRepository.save(movie);
     }
@@ -37,6 +40,7 @@ public class MovieServiceImpl implements MovieService {
      * @param movieId 영화 ID
      */
     @Override
+    @WithSpan
     public void removeMovie(Long movieId) {
         movieRepository.delete(movieId);
     }
@@ -47,11 +51,13 @@ public class MovieServiceImpl implements MovieService {
      * @param movie 영화 정보
      */
     @Override
+    @WithSpan
     public void modifyMovie(Movie movie) {
         movieRepository.update(movie);
     }
 
     @Override
+    @WithSpan
     public List<Movie> findAll() {
         return movieRepository.findAll();
     }
