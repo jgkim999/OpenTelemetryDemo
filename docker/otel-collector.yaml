@@ -10,6 +10,10 @@ receivers:
             - http://*
             - https://*
 processors:
+  attributes/drop_process_command_args:
+    actions:
+      - key: process.command_args
+        action: delete
   batch:
 extensions:
   health_check: {} 
@@ -43,4 +47,5 @@ service:
       exporters: [debug, prometheus]
     logs:
       receivers: [otlp]
+      processors: [atributes/drop_process_command_args]
       exporters: [debug, otlphttp]
