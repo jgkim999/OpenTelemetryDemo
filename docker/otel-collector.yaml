@@ -10,9 +10,19 @@ receivers:
             - http://*
             - https://*
 processors:
-  attributes/drop_process_command_args:
-    actions:
+  resource/remove_sdk_attributes:
+    attributes:
       - key: process.command_args
+        action: delete
+      - key: telemetry.distro.name
+        action: delete
+      - key: telemetry.distro.version
+        action: delete
+      - key: telemetry.sdk.language
+        action: delete
+      - key: telemetry.sdk.name
+        action: delete
+      - key: telemetry.sdk.version
         action: delete
   batch:
 extensions:
@@ -39,13 +49,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/remove_sdk_attributes, batch]
       exporters: [debug, otlp, otlphttp/tempo]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [resource/remove_sdk_attributes, batch]
       exporters: [debug, prometheus]
     logs:
       receivers: [otlp]
-      processors: [atributes/drop_process_command_args]
+      processors: [resource/remove_sdk_attributes, batch]
       exporters: [debug, otlphttp]
