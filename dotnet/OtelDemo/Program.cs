@@ -1,6 +1,10 @@
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using OtelDemo.Services;
 using Scalar.AspNetCore;
 using Serilog;
@@ -18,6 +22,49 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    
+    string serviceName = builder.Environment.ApplicationName ?? "DotNetOtelDemo";
+    
+    var otel = builder.Services.AddOpenTelemetry();
+    otel.ConfigureResource(resource => resource
+        .AddService(serviceName));
+    
+    otel.WithMetrics(metrics => metrics
+        // Metrics provider from OpenTelemetry
+        .AddAspNetCoreInstrumentation()
+        .AddProcessInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddHttpClientInstrumentation()
+        // Metrics provides by ASP.NET Core in .NET 8
+        .AddMeter("Microsoft.AspNetCore.Hosting")
+        .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+        // Metrics provided by System.Net libraries
+        .AddMeter("System.Net.Http")
+        .AddMeter("System.Net.NameResolution")
+        .AddConsoleExporter()
+        .AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://192.168.0.47:4317");
+            o.Protocol = OtlpExportProtocol.Grpc;
+        })
+        .AddPrometheusExporter());
+    
+    ActivityService.Initialize(serviceName, "1.0.0", 1.0);
+    
+    // Add Tracing for ASP.NET Core and our custom ActivitySource and export to Jaeger
+    otel.WithTracing(tracing =>
+    {
+        tracing.AddSource(ActivityService.Name);
+        tracing.AddAspNetCoreInstrumentation();
+        tracing.AddHttpClientInstrumentation();
+        tracing.AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://192.168.0.47:4317");
+            o.Protocol = OtlpExportProtocol.Grpc;
+        });
+        tracing.AddConsoleExporter();
+    });
+    
     builder.Services.AddSerilog();
     builder.Services
         .Configure<JwtCreationOptions>(o => o.SigningKey = JwtKey.SigningKey)
@@ -41,6 +88,8 @@ try
         app.MapScalarApiReference();
     }
 
+    app.MapPrometheusScrapingEndpoint();
+    
     app.Run();
 }
 catch (Exception ex)
