@@ -10,25 +10,27 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
 
+var builder = WebApplication.CreateBuilder(args);
+
+var otlpEndpoint = builder.Configuration["OTLP_ENDPOINT_URL"] ?? "http://localhost:4317/";
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
     .WriteTo.OpenTelemetry(options =>
     {
-        options.Endpoint = "http://192.168.0.47:4317";
+        options.Endpoint = otlpEndpoint;
         options.Protocol = OtlpProtocol.Grpc;
     })
     .CreateLogger();
 try
 {
-    var builder = WebApplication.CreateBuilder(args);
-    
     string serviceName = builder.Environment.ApplicationName ?? "DotNetOtelDemo";
-    
+
     var otel = builder.Services.AddOpenTelemetry();
     otel.ConfigureResource(resource => resource
         .AddService(serviceName));
-    
+
     otel.WithMetrics(metrics => metrics
         // Metrics provider from OpenTelemetry
         .AddAspNetCoreInstrumentation()
@@ -44,13 +46,13 @@ try
         .AddConsoleExporter()
         .AddOtlpExporter(o =>
         {
-            o.Endpoint = new Uri("http://192.168.0.47:4317");
+            o.Endpoint = new Uri(otlpEndpoint);
             o.Protocol = OtlpExportProtocol.Grpc;
         })
         .AddPrometheusExporter());
-    
+
     ActivityService.Initialize(serviceName, "1.0.0", 1.0);
-    
+
     // Add Tracing for ASP.NET Core and our custom ActivitySource and export to Jaeger
     otel.WithTracing(tracing =>
     {
@@ -59,12 +61,12 @@ try
         tracing.AddHttpClientInstrumentation();
         tracing.AddOtlpExporter(o =>
         {
-            o.Endpoint = new Uri("http://192.168.0.47:4317");
+            o.Endpoint = new Uri(otlpEndpoint);
             o.Protocol = OtlpExportProtocol.Grpc;
         });
         tracing.AddConsoleExporter();
     });
-    
+
     builder.Services.AddSerilog();
     builder.Services
         .Configure<JwtCreationOptions>(o => o.SigningKey = JwtKey.SigningKey)
@@ -89,7 +91,7 @@ try
     }
 
     app.MapPrometheusScrapingEndpoint();
-    
+
     app.Run();
 }
 catch (Exception ex)
