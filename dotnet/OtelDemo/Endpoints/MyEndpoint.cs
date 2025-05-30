@@ -5,6 +5,13 @@ namespace OtelDemo.Endpoints;
 
 public class MyEndpoint : Endpoint<MyRequest, MyResponse>
 {
+    private readonly ILogger<MyEndpoint> _logger;
+    
+    public MyEndpoint(ILogger<MyEndpoint> logger)
+    {
+        _logger = logger;
+    }
+    
     public override void Configure()
     {
         Post("/api/user/create");
@@ -14,9 +21,10 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
     public override async Task HandleAsync(MyRequest req, CancellationToken ct)
     {
         await SendAsync(new()
-        {
-            FullName = req.FirstName + " " + req.LastName,
-            IsOver18 = req.Age > 18
-        });
+            {
+                FullName = req.FirstName + " " + req.LastName,
+                IsOver18 = req.Age > 18
+            },
+            cancellation: ct);
     }
 }
