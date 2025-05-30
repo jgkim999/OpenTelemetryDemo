@@ -138,3 +138,5 @@ nest-demo/docker/docker-compose.yml
 .DS_Store
 .vscode/settings.json
 .idea
+dotnet/OtelDemo/bin
+dotnet/OtelDemo/obj
