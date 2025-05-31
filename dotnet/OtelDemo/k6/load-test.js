@@ -12,8 +12,8 @@ export const options = {
         breaking: {
             executor: 'ramping-vus',
             stages: [
-                { duration: '1m', target: 1 },
-                { duration: '10m', target: 1 },
+                { duration: '1m', target: 100 },
+                { duration: '10m', target: 100 },
                 { duration: '1m', target: 0 }
             ],
         },
@@ -29,17 +29,22 @@ export default function () {
         },
     };
 
+    const username = randomString(8);
+    const password = randomString(12);
+    
     const createPayload = JSON.stringify({
         firstName: randomString(8),
         lastName: randomString(8),
         age: randomIntBetween(1, 80),
+        username: username,
+        password: password,
     });
     const res = http.post(`${baseUrl}/api/user/create`, createPayload, params);
     sleep(randomIntBetween(1, 1));      
     
     const loginPayload = JSON.stringify({
-        username: randomString(8),
-        password: randomString(12),
+        username: username,
+        password: password,
     });
     http.post(`${baseUrl}/api/login`, loginPayload, params);
     sleep(randomIntBetween(1, 1));

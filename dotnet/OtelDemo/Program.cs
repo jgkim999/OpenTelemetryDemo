@@ -1,10 +1,14 @@
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
+using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OtelDemo.Configs;
+using OtelDemo.Infrastructure;
+using OtelDemo.Repositories;
 using OtelDemo.Services;
 using Scalar.AspNetCore;
 using Serilog;
@@ -26,6 +30,17 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     string serviceName = builder.Environment.ApplicationName;
+    
+    var redisOptions = builder.Configuration.GetSection("Redis").Get<RedisOptions>();
+    if (redisOptions == null)
+    {
+        throw new InvalidOperationException("Redis configuration is missing.");
+    }
+    if (string.IsNullOrWhiteSpace(redisOptions.ConnectionString))
+    {
+        throw new InvalidOperationException("Redis connection string is not configured.");
+    }
+    var redisManager = new RedisManager(redisOptions);
 
     var otel = builder.Services.AddOpenTelemetry();
     otel.ConfigureResource(resource => resource
@@ -44,7 +59,7 @@ try
         // Metrics provided by System.Net libraries
         metrics.AddMeter("System.Net.Http");
         metrics.AddMeter("System.Net.NameResolution");
-        metrics.AddConsoleExporter();
+        //metrics.AddConsoleExporter();
         metrics.AddOtlpExporter(o =>
         {
             o.Endpoint = new Uri(otlpEndpoint);
@@ -63,12 +78,15 @@ try
         tracing.AddSource(ActivityService.Name);
         tracing.AddAspNetCoreInstrumentation();
         tracing.AddHttpClientInstrumentation();
+        tracing.AddRedisInstrumentation(
+            redisManager.GetConnection(),
+            options => options.SetVerboseDatabaseStatements = true);
         tracing.AddOtlpExporter(o =>
         {
             o.Endpoint = new Uri(otlpEndpoint);
             o.Protocol = OtlpExportProtocol.Grpc;
         });
-        tracing.AddConsoleExporter();
+        //tracing.AddConsoleExporter();
     });
 
     builder.Services.AddSerilog();
@@ -80,6 +98,9 @@ try
         .SwaggerDocument(); //define a swagger doc - v1 by default
 
     builder.Services.AddTransient<IAuthService, AuthService>();
+    builder.Services.AddSingleton(redisOptions);
+    builder.Services.AddSingleton(redisManager);
+    builder.Services.AddTransient<IUserRepository, UserRepository>();
 
     var app = builder.Build();
     app.UseAuthentication()
