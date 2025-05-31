@@ -2,7 +2,7 @@
 
 Configured using DotNet 9 and [FastEndpoints](https://fast-endpoints.com/).
 
-Open the [appsettings.json] file and modify it as needed for your environment.
+Open the [appsettings.json](./appsettings.json) file and modify it as needed for your environment.
 
 ## Docker
 
