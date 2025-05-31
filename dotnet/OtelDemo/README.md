@@ -1,11 +1,15 @@
 # DotNet
 
-[FastEndpoints](https://fast-endpoints.com/)
+Configured using DotNet 9 and [FastEndpoints](https://fast-endpoints.com/).
+
+Open the [appsettings.json] file and modify it as needed for your environment.
 
 ## Docker
 
-[Docker compose](https://github.com/jgkim999/docker/tree/main/opentelemetry)
+The required environment for the example uses a [Docker compose](https://github.com/jgkim999/docker/tree/main/opentelemetry) file.
+
+Modify it as needed for your environment.
 
 ## Load Test
 
-[k6](./k6/README.md)
+You can perform performance testing using [k6](./k6/README.md)
