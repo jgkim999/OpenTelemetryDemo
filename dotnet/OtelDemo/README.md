@@ -13,3 +13,11 @@ Modify it as needed for your environment.
 ## Load Test
 
 You can perform performance testing using [k6](./k6/README.md)
+
+![log](./images/001.png)
+
+![trace](./images/002.png)
+
+![metric](./images/003.png)
+
+![load test](./images/004.png)
