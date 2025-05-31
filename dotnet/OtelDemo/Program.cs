@@ -25,7 +25,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 try
 {
-    string serviceName = builder.Environment.ApplicationName ?? "DotNetOtelDemo";
+    string serviceName = builder.Environment.ApplicationName;
 
     var otel = builder.Services.AddOpenTelemetry();
     otel.ConfigureResource(resource => resource
@@ -51,11 +51,13 @@ try
         })
         .AddPrometheusExporter());
 
-    ActivityService.Initialize(serviceName, "1.0.0", 1.0);
+    ActivityService.Initialize(serviceName, "1.0.1");
 
     // Add Tracing for ASP.NET Core and our custom ActivitySource and export to Jaeger
     otel.WithTracing(tracing =>
     {
+        var probability = builder.Configuration?.GetValue<double>("OTEL_TRACES_SAMPLER_ARG") ?? 1.0;
+        tracing.SetSampler(new TraceIdRatioBasedSampler(probability));
         tracing.AddSource(ActivityService.Name);
         tracing.AddAspNetCoreInstrumentation();
         tracing.AddHttpClientInstrumentation();

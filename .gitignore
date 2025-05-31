@@ -140,3 +140,4 @@ nest-demo/docker/docker-compose.yml
 .idea
 dotnet/OtelDemo/bin
 dotnet/OtelDemo/obj
+dotnet/OtelDemo/Folder.DotSettings.user

@@ -1,21 +1,19 @@
 using System.Diagnostics;
+using Serilog;
 
 namespace OtelDemo.Services;
 
 public static class ActivityService
 {
     private static ActivitySource? _activeSource;
-    private static Random _random = new Random();
-    private static double _samplingRate = 1.0;
     
-    public static void Initialize(string name, string version = "1.0.0", double samplingRate = 1.0)
+    public static void Initialize(string name, string version = "1.0.0")
     {
         if (_activeSource != null)
         {
             return; // Already initialized
         }
-        _activeSource = new ActivitySource( name ?? "OtelDemo", version?? "1.0.0");
-        _samplingRate = samplingRate;
+        _activeSource = new ActivitySource( name, version);
     }
     
     public static string Name => _activeSource?.Name ?? "OtelDemo";
@@ -24,23 +22,21 @@ public static class ActivityService
     {
         if (_activeSource == null)
         {
-            throw new InvalidOperationException("ActiveSourceService is not initialized. Call Initialize() first.");
+            Log.Logger.Error("ActiveSourceService is not initialized. Call Initialize() first. {Name}", name);
+            return null;
         }
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Activity name cannot be null or empty.", nameof(name));
+            Log.Logger.Error("Activity name cannot be null or empty. {Name}", name);
+            return null;
         }
         if (kind == ActivityKind.Internal && !_activeSource.HasListeners())
         {
+            Log.Logger.Warning("No listeners for internal activity. Activity will not be started. {Name}", name);
             return null; // No listeners for internal activities
         }
-        // Check if the activity should be sampled based on the sampling rate
-        if (_samplingRate < 1.0 && _random.NextDouble() > _samplingRate)
-        {
-            return null; // Skip this activity based on sampling rate
-        }
         // Start a new activity with the provided name and kind
-        var activity = _activeSource?.StartActivity(name, kind);
+        var activity = _activeSource.StartActivity(name, kind);
         return activity;
     }
 }
