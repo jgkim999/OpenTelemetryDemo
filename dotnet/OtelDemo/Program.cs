@@ -31,25 +31,27 @@ try
     otel.ConfigureResource(resource => resource
         .AddService(serviceName));
 
-    otel.WithMetrics(metrics => metrics
+    otel.WithMetrics(metrics =>
+    {
         // Metrics provider from OpenTelemetry
-        .AddAspNetCoreInstrumentation()
-        .AddProcessInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddHttpClientInstrumentation()
+        metrics.AddAspNetCoreInstrumentation();
+        metrics.AddProcessInstrumentation();
+        metrics.AddRuntimeInstrumentation();
+        metrics.AddHttpClientInstrumentation();
         // Metrics provides by ASP.NET Core in .NET 8
-        .AddMeter("Microsoft.AspNetCore.Hosting")
-        .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+        metrics.AddMeter("Microsoft.AspNetCore.Hosting");
+        metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
         // Metrics provided by System.Net libraries
-        .AddMeter("System.Net.Http")
-        .AddMeter("System.Net.NameResolution")
-        .AddConsoleExporter()
-        .AddOtlpExporter(o =>
+        metrics.AddMeter("System.Net.Http");
+        metrics.AddMeter("System.Net.NameResolution");
+        metrics.AddConsoleExporter();
+        metrics.AddOtlpExporter(o =>
         {
             o.Endpoint = new Uri(otlpEndpoint);
             o.Protocol = OtlpExportProtocol.Grpc;
-        })
-        .AddPrometheusExporter());
+        });
+        metrics.AddPrometheusExporter();
+    });
 
     ActivityService.Initialize(serviceName, "1.0.1");
 
