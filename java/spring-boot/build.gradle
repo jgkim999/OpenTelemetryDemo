@@ -32,11 +32,23 @@ dependencyManagement {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-logging'
+
 	implementation 'com.google.code.gson:gson:2.13.1'
 	implementation 'net.datafaker:datafaker:2.4.2'
+
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
-	implementation 'io.opentelemetry:opentelemetry-sdk'
-	implementation 'io.opentelemetry:opentelemetry-exporter-otlp' // OTLP Exporter 추가 (Collector로 전송)
+	implementation "io.opentelemetry:opentelemetry-api"
+	implementation "io.opentelemetry:opentelemetry-sdk"
+	implementation "io.opentelemetry:opentelemetry-exporter-otlp"
+
+	// json 형태로 로그 출력
+	implementation "ch.qos.logback.contrib:logback-json-classic:0.1.5"
+	implementation "ch.qos.logback.contrib:logback-jackson:0.1.5"
+
+	// OTEL Log Exporter whit LOGBACK appender
+	implementation "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.15.0-alpha"
+
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'io.micrometer:micrometer-registry-otlp'
